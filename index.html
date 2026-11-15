@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Guide de l'application TARAN+ : analyse de cible, C50 Live, shot timer, râtelier, entretien, historique.">
+<title>Guide TARAN+</title>
+<style>
+:root{
+  --bg:#F2F4F6; --carte:#FFFFFF; --texte:#14181D; --discret:#5E6A76; --trait:#D9DEE3;
+  --vert:#15803D; --orange:#E07B00; --voile:#E7EBEE; --sur-accent:#FFFFFF; --cible:#2B3138; --impact:#C0362C;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0F1318; --carte:#1A2027; --texte:#F2F4F7; --discret:#9AA5B1; --trait:#2C353F;
+  --vert:#3DDC84; --orange:#FF9500; --voile:#222A33; --sur-accent:#08130C; --cible:#C9D1D9; --impact:#FF6B6B; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F1318; --carte:#1A2027; --texte:#F2F4F7; --discret:#9AA5B1; --trait:#2C353F;
+  --vert:#3DDC84; --orange:#FF9500; --voile:#222A33; --sur-accent:#08130C; --cible:#C9D1D9; --impact:#FF6B6B; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--texte);font-family:Inter,system-ui,sans-serif;font-size:15px;line-height:1.5;
+  padding-block:0 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.page{max-width:760px;margin:0 auto}
+header{display:flex;align-items:center;justify-content:space-between;padding:18px 0 10px}
+.logo{font-weight:800;font-size:18px;color:var(--texte);text-decoration:none}
+.logo span{color:var(--vert)}
+.bandeau{font-size:12px;color:var(--discret);background:var(--voile);border-radius:10px;padding:8px 12px;margin:0 0 16px}
+h1{font-size:26px;line-height:1.2;margin:8px 0 6px}
+h2{font-size:18px;margin:0 0 6px}
+.chapo{color:var(--discret);margin:0 0 20px}
+.grille{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.tuile{display:flex;flex-direction:column;gap:6px;background:var(--carte);border:1px solid var(--trait);border-radius:16px;padding:16px;color:inherit;text-decoration:none}
+.tuile:hover,.tuile:focus-visible{border-color:var(--vert);outline:none}
+.tuile .ico{width:40px;height:40px;border-radius:12px;background:var(--voile);display:grid;place-items:center;font-size:20px}
+.tuile b{font-size:16px}
+.tuile small{color:var(--discret);font-size:13px}
+.retour{display:inline-block;color:var(--vert);text-decoration:none;font-weight:600;font-size:14px;padding:8px 0}
+.scene{background:var(--carte);border:1px solid var(--trait);border-radius:16px;padding:12px;margin:12px 0}
+.scene svg{width:100%;height:auto;display:block}
+.scene svg text{fill:var(--discret);font-size:11px;font-family:inherit}
+.legende{font-size:13px;color:var(--discret);margin:6px 4px 0;min-height:20px}
+.etapes{display:flex;gap:6px;margin:6px 0 4px}
+.etapes button{flex:1;height:8px;border:0;border-radius:4px;background:var(--trait);padding:0;cursor:pointer}
+.etapes button.on{background:var(--vert)}
+.nav{display:flex;gap:8px;margin-top:10px}
+.btn{flex:1;border:1px solid var(--trait);background:var(--carte);color:var(--texte);border-radius:12px;padding:11px;font:inherit;font-weight:600;cursor:pointer}
+.btn.pri{background:var(--vert);border-color:var(--vert);color:var(--sur-accent)}
+.btn:disabled{opacity:.4;cursor:default}
+.encart{border-left:3px solid var(--orange);background:var(--carte);border-radius:0 12px 12px 0;padding:10px 14px;margin:14px 0;font-size:14px}
+.pro{display:inline-block;font-size:11px;font-weight:700;border:1px solid var(--orange);color:var(--orange);border-radius:999px;padding:1px 8px;vertical-align:middle}
+.liste{display:flex;flex-direction:column;gap:8px;margin:10px 0}
+.liste div{background:var(--carte);border:1px solid var(--trait);border-radius:12px;padding:10px 14px}
+.liste b{display:block}
+footer{margin-top:28px;font-size:12px;color:var(--discret);text-align:center}
+.lcd{font-family:ui-monospace,Menlo,monospace;font-weight:700}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="page">
+<header>
+  <a class="logo" href="#/">TARAN<span>+</span> <span style="color:var(--discret);font-weight:500;font-size:14px">le guide</span></a>
+</header>
+<main id="app"></main>
+<footer>Guide TARAN+ · version de l'appli : 0.30.2 · <a href="#/" style="color:inherit">Sommaire</a></footer>
+</div>
+
+<script>
+/* ---------- Contenu : une entrée par tuile du sommaire ---------- */
+const PAGES = {
+ live:{ico:"🎯",nom:"C50 Live",court:"Compter les impacts en direct avec la caméra.",
+  chapo:"Posez le téléphone devant la cible : TARAN+ voit chaque nouvel impact et tient le compte pour vous.",
+  etapes:[
+   {t:"Choisir la cible, le calibre et l'arme",x:"Sélectionnez la cible, le calibre et l'arme de votre râtelier, puis le nombre de coups attendus par photo.",s:"img:reglages"},
+   {t:"Cadrer la cible",x:"Mettez la cible ENTIÈRE dans le repère. Le cadre devient vert quand elle est bien reconnue, rouge sinon.",s:"img:cadre"},
+   {t:"Photographier : TARAN+ compte",x:"Chaque impact détecté est marqué. Touchez un impact pour le retirer, une zone vide pour en ajouter un.",s:"img:estim1"},
+   {t:"Voir le score estimé",x:"Le score et la répartition par zone s'affichent. Estimation rapide : pour l'enregistrer, passez par l'analyse.",s:"img:estim2"}],
+  note:""},
+ analyse:{ico:"🔍",nom:"Analyse de cible",court:"Analyser une photo de cible déjà tirée.",
+  chapo:"Prenez une photo (ou choisissez-en une) : TARAN+ détecte les impacts et calcule score et groupement.",
+  etapes:[
+   {t:"Créer une séance",x:"Lieu, arme, distance et calibre : seul le calibre est obligatoire.",s:"img:seance"},
+   {t:"Ajouter une cible",x:"Une nouvelle séance est vide. Le bouton orange ajoute une cible, avec une photo ou une image de la galerie.",s:"img:seancevide"},
+   {t:"Recadrer la photo",x:"Faites glisser les coins du cadre orange pour ne garder que la cible, puis validez.",s:"img:recadre"},
+   {t:"Calibrer l'échelle",x:"Vous placez deux points de distance connue sur la cible. C'est ce qui donne les vrais millimètres.",s:"img:calibpose",lien:"calibrage"},
+   {t:"Indiquer le nombre de coups",x:"La détection est limitée à ce nombre d'impacts : les plus fiables sont gardés en priorité.",s:"img:nbcoups"},
+   {t:"Vérifier les impacts",x:"Les impacts détectés sont cerclés. Les moins sûrs apparaissent en rouge : vous pouvez les retirer ou en ajouter.",s:"img:detect"},
+   {t:"Voir le score",x:"Le bouton Score détaille le total, la moyenne par coup, les dix et les mouches, zone par zone.",s:"img:score"},
+   {t:"Enregistrer la cible",x:"La cible validée rejoint la séance, avec sa miniature et son nombre d'impacts.",s:"img:seancecible"},
+   {t:"Statistiques de groupement",x:"Les impacts sont tracés autour du centre, avec le cercle du rayon moyen. Saisissez la distance de tir pour avoir aussi des MOA.",s:"img:grp1"},
+   {t:"Les chiffres du groupement",x:"Écart extrême, rayon moyen, CEP 90, écart-type, surface et point moyen d'impact par rapport au centre.",s:"img:grp2"},
+   {t:"Lire le bilan de la séance",x:"Progression photo par photo, estimation Live comparée à l'analyse précise, moyenne par impact.",s:"img:bilan"}],
+  note:""},
+ calibrage:{ico:"📏",nom:"Calibrage",court:"Donner l'échelle à la photo pour avoir des mm exacts.",
+  chapo:"Le calibrage dit à TARAN+ combien de millimètres font deux points de la photo. Regardez l'animation.",
+  etapes:[
+   {t:"L'animation d'aide",x:"À chaque calibrage, l'appli montre où poser les repères : de part et d'autre de la référence de la cible.",s:"img:calibdialog"},
+   {t:"Poser le premier repère",x:"Touchez le bord gauche de l'anneau de référence de la cible.",s:"calibrage",p:1},
+   {t:"Poser le second repère",x:"Touchez le bord droit, bien en face du premier, sur le même anneau.",s:"calibrage",p:2},
+   {t:"L'échelle est fixée",x:"TARAN+ affiche la distance (ici 200 mm). Tous les résultats en découlent.",s:"calibrage",p:3},
+   {t:"Sur une vraie cible",x:"Glissez les repères pour ajuster, puis touchez Terminer. Vous pouvez recalibrer à tout moment.",s:"img:calibpose"}],
+  note:"Astuce : plus les deux repères sont éloignés, plus le calibrage est précis."},
+ timer:{ico:"⏱️",nom:"Shot timer",court:"Chronomètre de tir : libre, 3 s / 7 s, olympique, Five to Gogo.",
+  chapo:"Un vrai timer de stand : bip de départ, temps de chaque coup, bilan de série.",
+  etapes:[
+   {t:"Choisir le mode",x:"Libre, pistolet 3 s / 7 s, vitesse olympique ou Five to Gogo.",s:"img:timer"},
+   {t:"Régler l'entraînement",x:"Nombre de coups, départ immédiat, fixe ou aléatoire, temps imparti : tout se règle avec des curseurs ou les boutons − / +.",s:"img:libre"},
+   {t:"Les modes de compétition",x:"Pistolet 3 s / 7 s, vitesse olympique et Five to Gogo ont leurs propres réglages. C50 Live peut compter les points entre les séries.",s:"img:t37"},
+   {t:"Départ au bip, temps par coup",x:"Le micro chronomètre chaque coup. Moyenne, meilleur et plus lent coup sont calculés, puis suivis dans Historique & progression.",s:"timer"}],
+  note:""},
+ ratelier:{ico:"🔫",nom:"Râtelier",court:"Vos armes, leurs lots de munitions et leur calibre.",
+  chapo:"Enregistrez vos armes une fois : elles se retrouvent dans toutes les fonctions.",
+  etapes:[
+   {t:"Vos armes",x:"Chaque arme affiche son type, son calibre et son nombre de coups au total.",s:"img:ratelier"},
+   {t:"Ajouter une arme",x:"Nom, calibre, type d'arme et date d'achat. Le calibre règle la détection des impacts.",s:"img:arme"}],
+  note:""},
+ entretien:{ico:"🧽",nom:"Entretien",court:"Suivre le nettoyage et le nombre de coups tirés.",
+  chapo:"TARAN+ cumule les coups par arme et vous prévient quand il est temps de nettoyer.",
+  etapes:[
+   {t:"Le suivi de toutes vos armes",x:"Pour chaque arme : coups tirés et jours écoulés depuis le dernier entretien, comparés aux seuils que vous choisissez.",s:"img:entretien1"},
+   {t:"Régler les seuils d'une arme",x:"Fixez le nombre de coups et de jours avant entretien, puis activez la notification. « Marquer comme entretenue » remet les compteurs à zéro.",s:"img:entretien2"}],
+  note:""},
+ historique:{ico:"📈",nom:"Historique & progression",court:"Retrouver séances, courbes et classements.",
+  chapo:"Trois onglets : Score, Groupement, Timer. Filtrez par arme et par période.",
+  etapes:[
+   {t:"Retrouver vos séances",x:"La liste montre chaque séance avec sa date, son calibre et son arme.",s:"img:histo"},
+   {t:"Suivre votre progression",x:"Trois onglets : Score, Groupement, Timer. Filtrez par arme, calibre et période. La flèche verte ▲ indique un progrès sur la séance précédente.",s:"img:progression"},
+   {t:"L'onglet Groupement",x:"Suivez le rayon moyen, le CEP 90 ou l'écart extrême, par format de série et par période.",s:"img:groupement"},
+   {t:"Choisir les séries à comparer",x:"Sélectionnez 2 à 4 séries d'une même arme : chacune reçoit une couleur.",s:"img:compchoix"},
+   {t:"Superposer les groupements",x:"Les impacts de chaque série sont superposés sur une même cible, avec un tableau : rayon moyen, écart extrême, décalage et dispersion. Le meilleur de chaque ligne est coché.",s:"img:compare"},
+   {t:"Glisser vers la droite : Modifier",x:"Dans le journal des séances, faites glisser une ligne vers la droite pour la modifier.",s:"img:glisserD"},
+   {t:"Modifier la séance",x:"Changez son nom, sa date et son heure. La date de la photo peut être reprise en un toucher.",s:"img:modifseance"},
+   {t:"Glisser vers la gauche : Supprimer",x:"Une ligne glissée vers la gauche fait apparaître le bouton rouge Supprimer.",s:"img:glisserG"},
+   {t:"Confirmer la suppression",x:"Une confirmation est demandée : la séance et toutes ses cibles (photos, calibrages, impacts) seront définitivement supprimées.",s:"img:suppr"},
+   {t:"Les temps du Shot timer",x:"L'onglet Timer suit, par mode, le temps moyen par coup, la tendance et le classement des séries de la dernière passe. Les modes sans donnée se masquent seuls.",s:"img:timerhisto"}],
+  note:""},
+ reglages:{ico:"⚙️",nom:"Réglages",court:"Langue, thème, sauvegarde, version Pro.",
+  chapo:"Les réglages généraux de l'application.",
+  etapes:[
+   {t:"Langue, thème et taille du texte",x:"Français ou English, thème sombre, clair ou celui du système, et trois tailles de texte. La langue s'applique tout de suite. L'alerte munitions fixe le seuil par défaut.",s:"img:reg1"},
+   {t:"Moteur de détection et remise à zéro",x:"Le processeur (CPU) est utilisé par défaut, c'est le plus fiable. Vous pouvez tester l'accélération matérielle. Chaque catégorie de données peut être réinitialisée séparément, avec confirmation.",s:"img:reg2"},
+   {t:"Sauvegarder et restaurer",x:"Un seul fichier chiffré par mot de passe contient armes, séances, munitions, réglages et photos. Idéal avant de changer de téléphone.",s:"img:reg3"},
+   {t:"Assistance",x:"Rien n'est envoyé sans votre action : un e-mail est préparé et vous le relisez avant l'envoi. La politique de confidentialité est accessible ici.",s:"img:reg4"}],
+  note:""},
+};
+const ORDRE=["live","analyse","calibrage","timer","ratelier","entretien","historique","reglages"];
+
+/* ---------- Scènes SVG ---------- */
+function scene(type,p){
+ if(type==="calibrage"){
+  // p: 1 premier repère, 2 second, 3 distance. Animation CSS légère, rejouée à chaque étape.
+  return `<svg viewBox="0 0 320 190" role="img" aria-label="Animation : on pose deux repères sur la cible, la distance s'affiche">
+   <circle cx="160" cy="95" r="80" fill="none" stroke="var(--cible)" stroke-width="2"/>
+   <circle cx="160" cy="95" r="55" fill="none" stroke="var(--cible)" stroke-width="1.5" opacity=".6"/>
+   <circle cx="160" cy="95" r="22" fill="var(--cible)"/>
+   <circle cx="132" cy="70" r="4" fill="var(--impact)"/><circle cx="170" cy="112" r="4" fill="var(--impact)"/><circle cx="150" cy="104" r="4" fill="var(--impact)"/>
+   <g style="opacity:${p>=1?1:0}"><circle cx="80" cy="95" r="8" fill="var(--vert)" opacity=".25"><animate attributeName="r" values="4;11;8" dur=".6s" fill="freeze"/></circle><circle cx="80" cy="95" r="4" fill="var(--vert)"/></g>
+   <g style="opacity:${p>=2?1:0}"><circle cx="240" cy="95" r="8" fill="var(--vert)" opacity=".25"><animate attributeName="r" values="4;11;8" dur=".6s" fill="freeze"/></circle><circle cx="240" cy="95" r="4" fill="var(--vert)"/></g>
+   ${p>=3?`<line x1="80" y1="95" x2="240" y2="95" stroke="var(--vert)" stroke-width="2" stroke-dasharray="5 4"><animate attributeName="stroke-dashoffset" from="160" to="0" dur=".8s" fill="freeze"/></line>
+   <rect x="128" y="64" width="64" height="22" rx="11" fill="var(--vert)"/><text x="160" y="79" text-anchor="middle" style="fill:var(--sur-accent);font-weight:700;font-size:12px">200 mm</text>`:""}
+   <text x="8" y="182">${p===1?"Repère 1 : bord gauche":p===2?"Repère 2 : bord droit":"Échelle fixée"}</text>
+  </svg>`;
+ }
+ if(type==="timer"){
+  return `<svg viewBox="0 0 320 150" role="img" aria-label="Afficheur du shot timer">
+   <rect x="20" y="14" width="280" height="84" rx="14" fill="var(--voile)" stroke="var(--trait)"/>
+   <text id="lcd" x="160" y="72" text-anchor="middle" class="lcd" style="fill:var(--vert);font-size:44px">0,00</text>
+   <text x="160" y="116" text-anchor="middle" id="lcdEtat">Prêt</text>
+   <g id="coups"></g></svg>`;
+ }
+ if(type.startsWith("img:")){return `<div style="display:flex;justify-content:center"><img src="img/${type.slice(4)}.jpg" alt="Capture de l'appli" style="width:100%;max-width:270px;border-radius:22px;border:6px solid var(--cible);background:var(--cible);display:block"></div>`;}
+ if(type==="cadre"){
+  return `<svg viewBox="0 0 320 170" role="img" aria-label="Cadre autour de la cible">
+   <rect x="90" y="12" width="140" height="146" rx="14" fill="none" stroke="var(--vert)" stroke-width="3" stroke-dasharray="14 8"><animate attributeName="stroke-dashoffset" from="0" to="44" dur="1.6s" repeatCount="indefinite"/></rect>
+   <circle cx="160" cy="85" r="52" fill="none" stroke="var(--cible)" stroke-width="2"/><circle cx="160" cy="85" r="16" fill="var(--cible)"/></svg>`;
+ }
+ if(type==="impacts"){
+  return `<svg viewBox="0 0 320 170" role="img" aria-label="Impacts détectés">
+   <circle cx="160" cy="85" r="64" fill="none" stroke="var(--cible)" stroke-width="2"/><circle cx="160" cy="85" r="20" fill="var(--cible)"/>
+   ${[[148,70],[172,78],[158,96],[181,92],[140,88]].map(([x,y],i)=>`<g><circle cx="${x}" cy="${y}" r="5" fill="var(--impact)"><animate attributeName="opacity" values="0;1" dur=".3s" begin="${i*.5}s" fill="freeze"/></circle></g>`).join("")}</svg>`;
+ }
+ if(type==="courbe"){
+  return `<svg viewBox="0 0 320 130" role="img" aria-label="Courbe de progression">
+   <g stroke="var(--trait)"><line x1="20" y1="20" x2="310" y2="20"/><line x1="20" y1="60" x2="310" y2="60"/><line x1="20" y1="100" x2="310" y2="100"/></g>
+   <polyline fill="none" stroke="var(--vert)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="30,90 80,76 130,82 180,58 230,50 300,30" stroke-dasharray="400"><animate attributeName="stroke-dashoffset" from="400" to="0" dur="1.2s" fill="freeze"/></polyline>
+   <circle cx="300" cy="30" r="5" fill="var(--vert)"/></svg>`;
+ }
+ return `<svg viewBox="0 0 320 150" role="img" aria-label="Exemple d'écran">
+  <rect x="100" y="8" width="120" height="134" rx="16" fill="var(--voile)" stroke="var(--trait)"/>
+  <rect x="112" y="24" width="96" height="14" rx="7" fill="var(--trait)"/><rect x="112" y="46" width="96" height="14" rx="7" fill="var(--trait)"/><rect x="112" y="68" width="60" height="14" rx="7" fill="var(--vert)"/>
+  <text x="160" y="118" text-anchor="middle">capture de l'appli (à venir)</text></svg>`;
+}
+
+/* ---------- Rendu ---------- */
+const app=document.getElementById("app");
+let timerHandle=null;
+function accueil(){
+ app.innerHTML=`<h1>Tout savoir sur TARAN+</h1><p class="chapo">Choisissez une rubrique, comme dans le sommaire de l'appli. Chaque page explique pas à pas, avec une animation.</p>
+ <div class="grille">${ORDRE.map(k=>`<a class="tuile" href="#/${k}"><span class="ico">${PAGES[k].ico}</span><b>${PAGES[k].nom}</b><small>${PAGES[k].court}</small></a>`).join("")}</div>`;
+}
+function page(k){
+ const d=PAGES[k]; if(!d) return accueil();
+ let i=0;
+ app.innerHTML=`<a class="retour" href="#/">← Sommaire</a><h1>${d.ico} ${d.nom}${d.pro?' <span class="pro">limites en gratuit</span>':''}</h1><p class="chapo">${d.chapo}</p>
+ <div class="scene"><div id="sc"></div><div class="etapes" id="pts"></div><h2 id="et" style="margin-top:10px"></h2><p class="legende" id="ex" style="font-size:15px;color:var(--texte);margin:0 0 4px"></p>
+ <div class="nav"><button class="btn" id="pr">Précédent</button><button class="btn pri" id="su">Suivant</button></div></div>
+ ${d.etapes.some(e=>e.lien)?`<p><a class="retour" href="#/calibrage">Voir le calibrage en détail →</a></p>`:""}
+ ${d.note?`<div class="encart">${d.note}</div>`:""}`;
+ const $=id=>document.getElementById(id);
+ function montrer(){
+  clearInterval(timerHandle);
+  const e=d.etapes[i];
+  $("sc").innerHTML=scene(e.s,e.p);
+  $("pts").innerHTML=d.etapes.map((_,j)=>`<button class="${j===i?"on":""}" aria-label="Étape ${j+1}" data-j="${j}"></button>`).join("");
+  $("et").textContent=(i+1)+". "+e.t; $("ex").textContent=e.x;
+  $("pr").disabled=i===0; $("su").textContent=i===d.etapes.length-1?"Recommencer":"Suivant";
+  $("pts").querySelectorAll("button").forEach(b=>b.onclick=()=>{i=+b.dataset.j;montrer()});
+  if(e.s==="timer") lancerTimer(i);
+ }
+ $("pr").onclick=()=>{if(i>0){i--;montrer()}};
+ $("su").onclick=()=>{i=(i+1)%d.etapes.length;montrer()};
+ montrer();
+}
+function lancerTimer(etape){
+ const lcd=document.getElementById("lcd"),etat=document.getElementById("lcdEtat"),g=document.getElementById("coups");
+ const tirs=[1.12,1.38,1.31,1.47,1.29]; let t=0,n=0;
+ etat.textContent=etape===0?"Mode : 3 s / 7 s":etape===1?"Attention…":"Série en cours";
+ if(etape===0){lcd.textContent="3,00";return}
+ if(etape===1){let c=0;timerHandle=setInterval(()=>{c=(c+1)%4;etat.textContent=c<3?"Attention…":"BIP !";lcd.textContent=c<3?"0,00":"BIP"},700);return}
+ g.innerHTML="";
+ timerHandle=setInterval(()=>{
+  if(n>=tirs.length){ if(etape===3){etat.textContent="Moyenne 1,31 s · meilleur 1,12 s"} return}
+  t+=tirs[n]; lcd.textContent=t.toFixed(2).replace(".",",");
+  g.insertAdjacentHTML("beforeend",`<circle cx="${60+n*50}" cy="136" r="5" fill="var(--vert)"/>`);
+  etat.textContent="Coup "+(n+1)+" : "+tirs[n].toFixed(2).replace(".",",")+" s"; n++;
+ },900);
+}
+function route(){const k=location.hash.replace(/^#\/?/,"");clearInterval(timerHandle);k?page(k):accueil();window.scrollTo(0,0)}
+window.addEventListener("hashchange",route);route();
+</script>
+</body>
+</html>
