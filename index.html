@@ -46,7 +46,6 @@ h2{font-size:18px;margin:0 0 6px}
 .btn.pri{background:var(--vert);border-color:var(--vert);color:var(--sur-accent)}
 .btn:disabled{opacity:.4;cursor:default}
 .encart{border-left:3px solid var(--orange);background:var(--carte);border-radius:0 12px 12px 0;padding:10px 14px;margin:14px 0;font-size:14px}
-.pro{display:inline-block;font-size:11px;font-weight:700;border:1px solid var(--orange);color:var(--orange);border-radius:999px;padding:1px 8px;vertical-align:middle}
 .liste{display:flex;flex-direction:column;gap:8px;margin:10px 0}
 .liste div{background:var(--carte);border:1px solid var(--trait);border-radius:12px;padding:10px 14px}
 .liste b{display:block}
@@ -132,7 +131,7 @@ const PAGES = {
    {t:"Les modes de compétition",x:"Pistolet 3 s / 7 s, vitesse olympique et Five to Gogo ont leurs propres réglages. C50 Live peut compter les points entre les séries.",s:"img:t37"},
    {t:"Départ au bip, temps par coup",x:"Le micro chronomètre chaque coup. Moyenne, meilleur et plus lent coup sont calculés, puis suivis dans Historique & progression.",s:"timer"}],
   note:""},
- diy:{ico:"🏁",nom:"DIY Five to Gogo",court:"Tracer un mini parcours de 4 cibles et une stop plate, avec simulateur.",custom:true,
+ diy:{ico:"🏁",nom:"DIY Five to Gogo",court:"Bonus : tracer un mini parcours de 4 cibles et une stop plate, avec simulateur.",custom:true,
   chapo:"",etapes:[],note:""},
  ratelier:{ico:"🔫",nom:"Râtelier",court:"Vos armes, leurs lots de munitions et leur calibre.",
   chapo:"Enregistrez vos armes une fois : elles se retrouvent dans toutes les fonctions.",
@@ -160,7 +159,7 @@ const PAGES = {
    {t:"Confirmer la suppression",x:"Une confirmation est demandée : la séance et toutes ses cibles (photos, calibrages, impacts) seront définitivement supprimées.",s:"img:suppr"},
    {t:"Les temps du Shot timer",x:"L'onglet Timer suit, par mode, le temps moyen par coup, la tendance et le classement des séries de la dernière passe. Les modes sans donnée se masquent seuls.",s:"img:timerhisto"}],
   note:""},
- reglages:{ico:"⚙️",nom:"Réglages",court:"Langue, thème, sauvegarde, version Pro.",
+ reglages:{ico:"⚙️",nom:"Réglages",court:"Langue, thème, sauvegarde, assistance.",
   chapo:"Les réglages généraux de l'application.",
   etapes:[
    {t:"Langue, thème et taille du texte",x:"Français ou English, thème sombre, clair ou celui du système, et trois tailles de texte. La langue s'applique tout de suite. L'alerte munitions fixe le seuil par défaut.",s:"img:reg1"},
@@ -169,7 +168,7 @@ const PAGES = {
    {t:"Assistance",x:"Rien n'est envoyé sans votre action : un e-mail est préparé et vous le relisez avant l'envoi. La politique de confidentialité est accessible ici.",s:"img:reg4"}],
   note:""},
 };
-const ORDRE=["live","analyse","calibrage","timer","diy","ratelier","entretien","historique","reglages"];
+const ORDRE=["live","analyse","calibrage","timer","ratelier","entretien","historique","reglages","diy"];
 
 /* ---------- Scènes SVG ---------- */
 function scene(type,p){
@@ -218,7 +217,7 @@ function scene(type,p){
 }
 
 function pageDiy(){
- app.innerHTML=`<a class="retour" href="#/">← Sommaire</a><h1>🏁 DIY Five to Gogo</h1><p class="chapo">Un mini parcours de 4 cibles décroissantes et d'une stop plate, à tracer sur la clôture et au sol d'une salle. Réglez la distance, regardez le plan, puis la vue depuis le carré du tireur.</p>
+ app.innerHTML=`<a class="retour" href="#/">← Sommaire</a><h1>🏁 DIY Five to Gogo</h1><p class="chapo">Bonus : un mini parcours de 4 cibles décroissantes et d'une stop plate, à tracer sur la clôture et au sol d'une salle. Réglez la distance, regardez le plan et les repères du parcours officiel, puis la vue depuis le carré du tireur.</p>
  <div class="scene">
    <div class="onglets" role="group" aria-label="Choix de la vue">
      <button id="bPlan" aria-pressed="true">Vue de dessus</button>
@@ -230,6 +229,7 @@ function pageDiy(){
      <input id="dist" type="range" min="5" max="10" step="0.1" value="7.5">
      <label for="lat">Position du tireur (0 = au centre du plan)</label><output id="oLat"></output>
      <input id="lat" type="range" min="-1" max="1" step="0.05" value="0">
+     <label for="off" style="display:flex;gap:8px;align-items:center;grid-column:1/-1;margin:2px 0 8px"><input id="off" type="checkbox" checked style="accent-color:var(--vert);width:18px;height:18px"> Afficher les repères du parcours officiel</label>
      <label for="haut">Hauteur du haut des cibles</label><output id="oHaut"></output>
      <input id="haut" type="range" min="100" max="200" step="1" value="152">
    </div>
@@ -242,6 +242,11 @@ function pageDiy(){
   <thead><tr><th>Cible</th><th>Diamètre</th><th>Décalage</th><th>Centre</th><th>Distance de visée</th><th>Taille apparente</th></tr></thead>
   <tbody id="tb"></tbody></table></div>
  
+ <h2 style="margin-top:22px">Repères du parcours officiel</h2>
+ <p class="chapo" style="margin-bottom:6px">Sur le parcours officiel, la distance de tir et le décalage latéral se mesurent depuis le centre du carré du tireur, sur son axe. Les cibles sont toutes des gongs, à des distances différentes : la version en salle les remplace par des cibles de plus en plus petites, toutes sur la clôture, pour garder la même taille apparente.</p>
+ <div class="tableau"><table>
+  <thead><tr><th>Cible</th><th>Gong</th><th>Distance de tir</th><th>Décalage</th><th>Visée</th><th>Taille apparente</th><th>Version en salle</th></tr></thead>
+  <tbody id="tbo"></tbody></table></div>
  <h2 style="margin-top:22px">Tracer le parcours, pas à pas</h2>
  <ol class="etapes-trace">
   <li><b>Marquer le carré du tireur</b>Un carré de 91 × 91 cm. Son centre est l'axe de référence.</li>
@@ -254,31 +259,44 @@ function pageDiy(){
 
 const DEF=[{n:"1",d:20.8,x:-2.56},{n:"2",d:17.4,x:-0.71},{n:"3",d:13.9,x:0.57},{n:"4",d:11.6,x:1.42},{n:"Stop plate",d:35.7,x:6.11,stop:true}];
 const CIBLES=DEF.map(c=>({...c}));
+const OFFI=[{n:"1",d:25.4,D:9.14,x:-3.12,yd:"10 yards"},{n:"2",d:25.4,D:10.97,x:-1.04,yd:"12 yards"},{n:"3",d:25.4,D:13.72,x:1.04,yd:"15 yards"},{n:"4",d:25.4,D:16.46,x:3.12,yd:"18 yards"},{n:"Stop plate",d:30.5,D:6.40,x:5.21,yd:"7 yards",stop:true}];
+OFFI.forEach(o=>{o.f=o.D;o.vis=Math.hypot(o.D,o.x);o.mrad=2*Math.atan(o.d/200/o.vis)*1000});
 const $=id=>document.getElementById(id);
 const fr=(v,n=2)=>v.toFixed(n).replace(".",",");
 const sg=v=>(v>0?"+":v<0?"−":"")+fr(Math.abs(v));
 let vue="plan",courant=-1,HAUT=152;
 const centre=c=>HAUT-c.d/2;
-const bornes=lat=>{const xs=CIBLES.map(c=>c.x);return [Math.min(...xs,lat)-0.5,Math.max(...xs,lat)+0.5]};
+const bornes=lat=>{const xs=CIBLES.map(c=>c.x);if($("off").checked)OFFI.forEach(o=>xs.push(o.x));return [Math.min(...xs,lat)-0.9,Math.max(...xs,lat)+0.9]};
 const minmax=()=>{const xs=CIBLES.map(c=>c.x);return [Math.min(...xs),Math.max(...xs)]};
 
 function plan(dist,lat){
- const [X0,X1]=bornes(lat),[mn,mx]=minmax(),S=80,W=(X1-X0)*S,H=(dist+1.2)*S+50,y0=40,px=x=>(x-X0)*S;
- let s=`<svg class="diy" viewBox="0 0 ${W} ${H}" role="img" aria-label="Plan vu de dessus : clôture avec les cibles et carré du tireur">`;
- s+=`<rect x="${px(mn)-30}" y="${y0-7}" width="${(mx-mn)*S+60}" height="14" rx="4" fill="var(--mur)"/>`;
- s+=`<text x="${px(mn)-30}" y="${y0-34}" class="t-fort">Clôture</text>`;
- const cy=y0+dist*S,sx=px(lat),c91=0.91*S;
+ const off=$("off").checked,[X0,X1]=bornes(lat),[mn,mx]=minmax();
+ const fmax=Math.max(dist,...(off?OFFI.map(o=>o.f):[0]));
+ const S=Math.min(80,820/(fmax+1.6)),W=(X1-X0)*S,ybase=(fmax+0.9)*S+50,H=ybase+0.9*S/2+34,px=x=>(x-X0)*S,py=f=>ybase-f*S;
+ const yf=py(dist);
+ let s=`<svg class="diy" viewBox="0 0 ${W} ${H}" role="img" aria-label="Plan vu de dessus : clôture avec les cibles, carré du tireur et repères du parcours officiel">`;
+ s+=`<line x1="${px(0)}" y1="${py(fmax+0.6)}" x2="${px(0)}" y2="${ybase}" stroke="var(--trait)" stroke-dasharray="2 5"/><text x="${px(0)+6}" y="${py(fmax+0.6)+10}">Axe du tireur</text>`;
+ s+=`<rect x="${px(mn)-30}" y="${yf-7}" width="${(mx-mn)*S+60}" height="14" rx="4" fill="var(--mur)"/>`;
+ s+=`<text x="${px(mn)-30}" y="${yf-34}" class="t-fort">Clôture (version en salle)</text>`;
+ const cy=ybase,sx=px(lat),c91=0.91*S;
+ if(off){
+  OFFI.forEach(o=>{
+   const x=px(o.x),y=py(o.f),r=Math.max(5,o.d/200*S);
+   s+=`<line x1="${px(0)}" y1="${cy}" x2="${x}" y2="${y}" stroke="var(--orange)" stroke-width="1" stroke-dasharray="2 4" opacity=".8"/>`;
+   s+=`<circle cx="${x}" cy="${y}" r="${r}" fill="none" stroke="var(--orange)" stroke-width="2" stroke-dasharray="4 3"/>`;
+   s+=`<text x="${x}" y="${y-r-6}" text-anchor="middle" style="fill:var(--orange);font-weight:600">${o.stop?"Stop":o.n} · ${fr(o.D)} m</text>`;
+   s+=`<text x="${x}" y="${y+r+15}" text-anchor="middle" style="fill:var(--orange)">${sg(o.x)}</text>`;
+  });
+ }
  CIBLES.forEach((c,i)=>{
   const x=px(c.x),on=i===courant,r=Math.max(5,c.d/200*S);
-  s+=`<line x1="${x}" y1="${y0}" x2="${sx}" y2="${cy}" stroke="${on?"var(--vert)":"var(--discret)"}" stroke-width="${on?2.5:1}" stroke-dasharray="${on?"0":"4 5"}" opacity="${on?1:.7}"/>`;
-  s+=`<circle cx="${x}" cy="${y0}" r="${r}" fill="${c.stop?"var(--orange)":"var(--impact)"}" stroke="${on?"var(--texte)":"none"}" stroke-width="2.5"/>`;
-  s+=`<text x="${x}" y="${y0-18}" text-anchor="middle" class="t-fort">${c.n}</text>`;
-  s+=`<text x="${x}" y="${y0+r+16}" text-anchor="middle">${sg(c.x)}</text>`;
+  s+=`<line x1="${x}" y1="${yf}" x2="${sx}" y2="${cy}" stroke="${on?"var(--vert)":"var(--discret)"}" stroke-width="${on?2.5:1}" stroke-dasharray="${on?"0":"4 5"}" opacity="${on?1:.7}"/>`;
+  s+=`<circle cx="${x}" cy="${yf}" r="${r}" fill="${c.stop?"var(--orange)":"var(--impact)"}" stroke="${on?"var(--texte)":"none"}" stroke-width="2.5"/>`;
+  s+=`<text x="${x}" y="${yf+r+16}" text-anchor="middle" class="t-fort">${c.stop?"Stop":c.n} ${sg(c.x)}</text>`;
  });
  s+=`<rect x="${sx-c91/2}" y="${cy-c91/2}" width="${c91}" height="${c91}" rx="6" fill="var(--vert)" opacity=".9"/>`;
  s+=`<text x="${sx}" y="${cy+5}" text-anchor="middle" style="fill:var(--sur-accent);font-weight:700">Tireur</text>`;
- s+=`<line x1="12" y1="${y0+8}" x2="12" y2="${cy}" stroke="var(--discret)"/><text x="20" y="${(y0+cy)/2}" class="t-fort">${fr(dist,1)} m</text>`;
- s+=`<line x1="${px(mn)}" y1="${H-14}" x2="${px(mx)}" y2="${H-14}" stroke="var(--discret)"/><text x="${(px(mn)+px(mx))/2}" y="${H-20}" text-anchor="middle" class="t-fort">${fr(mx-mn)} m de large</text>`;
+ s+=`<line x1="12" y1="${yf}" x2="12" y2="${cy}" stroke="var(--discret)"/><text x="20" y="${(yf+cy)/2}" class="t-fort">${fr(dist,1)} m</text>`;
  return s+"</svg>";
 }
 function tireur(dist,lat){
@@ -288,6 +306,9 @@ function tireur(dist,lat){
  s+=`<text x="${px(mn)-34}" y="${py(200)-6}">Clôture, h. 2 m</text>`;
  s+=`<line x1="0" y1="${sol}" x2="${W}" y2="${sol}" stroke="var(--discret)"/>`;
  s+=`<line x1="${px(mn)-40}" y1="${py(HAUT)}" x2="${px(mx)+60}" y2="${py(HAUT)}" stroke="var(--orange)" stroke-dasharray="5 5"/><text x="${px(mx)+50}" y="${py(HAUT)-6}" text-anchor="end" style="fill:var(--orange)">Haut des cibles : ${HAUT} cm</text>`;
+ if($("off").checked)OFFI.forEach(o=>{const x=px(o.x);
+  s+=`<line x1="${x}" y1="${py(0)}" x2="${x}" y2="${py(200)}" stroke="var(--orange)" stroke-dasharray="3 5"/>`;
+  s+=`<text x="${x}" y="${py(200)-24}" text-anchor="middle" style="fill:var(--orange);font-weight:600">${o.stop?"Stop":o.n} ${sg(o.x)}</text>`});
  CIBLES.forEach((c,i)=>{
   const on=i===courant,x=px(c.x),r=c.d/2*S/100;
   s+=`<circle cx="${x}" cy="${py(centre(c))}" r="${r}" fill="${c.stop?"var(--orange)":"var(--impact)"}" stroke="${on?"var(--texte)":"none"}" stroke-width="3"/>`;
@@ -313,6 +334,8 @@ function calculs(dist,lat){
   const vis=Math.hypot(dist,c.x-lat),mrad=2*Math.atan(c.d/200/vis)*1000;
   $("c"+i).textContent=fr(centre(c),1)+" cm";$("v"+i).textContent=fr(vis)+" m";$("a"+i).textContent=fr(mrad,1)+" mrad ("+fr(mrad*3.4377,0)+" MOA)";
  });
+ $("tbo").innerHTML=OFFI.map((o,i)=>{const c=CIBLES[i],vis=Math.hypot(dist,c.x-lat),m=2*Math.atan(c.d/200/vis)*1000,e=(m/o.mrad-1)*100;
+  return `<tr class="${o.stop?"stop":""}"><td>${o.n}</td><td>${fr(o.d,1)} cm</td><td>${fr(o.D)} m (${o.yd})</td><td>${fr(Math.abs(o.x))} m ${o.x<0?"à gauche":"à droite"}</td><td>${fr(o.vis)} m</td><td>${fr(o.mrad,1)} mrad</td><td>${fr(m,1)} mrad (${e>0?"+":e<0?"−":""}${fr(Math.abs(e),0)} %)</td></tr>`}).join("");
  const [mn,mx]=minmax();
  $("largeur").textContent="Le plan fait "+fr(mx-mn)+" m de large entre la première cible et la stop plate. Vérifiez la place disponible avant de tracer.";
  $("liste-dec").textContent=CIBLES.map(c=>(c.stop?"stop plate : ":"cible "+c.n+" : ")+fr(Math.abs(c.x))+" m "+(c.x<0?"à gauche":"à droite")).join(", ")+".";
@@ -323,12 +346,12 @@ function rendre(){
  $("oDist").textContent=fr(dist,1)+" m";$("oLat").textContent=sg(lat)+" m";$("oHaut").textContent=HAUT+" cm";
  $("vue").innerHTML=vue==="plan"?plan(dist,lat):tireur(dist,lat);
  calculs(dist,lat);
- $("leg").textContent=courant<0?"Modifiez un diamètre ou un décalage dans le tableau : tout se recalcule.":
+ $("leg").textContent=courant<0?"En orange : le parcours officiel, mesuré depuis l'axe du tireur. En couleur pleine : votre version en salle.":
   (courant<CIBLES.length-1?"Cible "+CIBLES[courant].n+" : visée à "+fr(Math.hypot(dist,CIBLES[courant].x-lat))+" m, "+fr(CIBLES[courant].d,1)+" cm de diamètre.":"Stop plate : la série est terminée, le chrono s'arrête.");
 }
 function bascule(v){vue=v;$("bPlan").setAttribute("aria-pressed",v==="plan");$("bTireur").setAttribute("aria-pressed",v==="tireur");rendre()}
 $("bPlan").onclick=()=>bascule("plan");$("bTireur").onclick=()=>bascule("tireur");
-$("dist").oninput=rendre;$("lat").oninput=rendre;$("haut").oninput=rendre;
+$("off").onchange=rendre;$("dist").oninput=rendre;$("lat").oninput=rendre;$("haut").oninput=rendre;
 $("raz").onclick=()=>{$("dist").value=7.5;$("lat").value=0;$("haut").value=152;courant=-1;DEF.forEach((c,i)=>{CIBLES[i].d=c.d;CIBLES[i].x=c.x});construireTableau();rendre()};
 $("sim").onclick=()=>{clearInterval(timerHandle);courant=-1;let i=0;timerHandle=setInterval(()=>{courant=i;rendre();i++;if(i>=CIBLES.length)clearInterval(timerHandle)},900)};
 construireTableau();rendre();
@@ -345,7 +368,7 @@ function page(k){
  const d=PAGES[k]; if(!d) return accueil();
  if(d.custom) return pageDiy();
  let i=0;
- app.innerHTML=`<a class="retour" href="#/">← Sommaire</a><h1>${d.ico} ${d.nom}${d.pro?' <span class="pro">limites en gratuit</span>':''}</h1><p class="chapo">${d.chapo}</p>
+ app.innerHTML=`<a class="retour" href="#/">← Sommaire</a><h1>${d.ico} ${d.nom}</h1><p class="chapo">${d.chapo}</p>
  <div class="scene"><div id="sc"></div><div class="etapes" id="pts"></div><h2 id="et" style="margin-top:10px"></h2><p class="legende" id="ex" style="font-size:15px;color:var(--texte);margin:0 0 4px"></p>
  <div class="nav"><button class="btn" id="pr">Précédent</button><button class="btn pri" id="su">Suivant</button></div></div>
  ${d.etapes.some(e=>e.lien)?`<p><a class="retour" href="#/calibrage">Voir le calibrage en détail →</a></p>`:""}
